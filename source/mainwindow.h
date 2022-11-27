@@ -6,6 +6,10 @@
 //
 //  ------------------------------------------------------------------------
 //
+//  Edited for Qt6 compatibility
+//
+//  ------------------------------------------------------------------------
+//
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published
 //  by the Free Software Foundation, either version 3 of the License, or
@@ -53,6 +57,8 @@ class HelpDialogHighpassFilter;
 class HelpDialogNotchFilter;
 class HelpDialogFastSettle;
 class WaitForTriggerDialog;
+class QTime;
+class QTimer;
 
 using namespace std;
 

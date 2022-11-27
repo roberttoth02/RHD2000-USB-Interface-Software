@@ -6,6 +6,10 @@
 //
 //  ------------------------------------------------------------------------
 //
+//  Edited for Qt6 compatibility
+//
+//  ------------------------------------------------------------------------
+//
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published
 //  by the Free Software Foundation, either version 3 of the License, or
@@ -42,8 +46,13 @@ RenameChannelDialog::RenameChannelDialog(QString channel, QString oldName, QWidg
 
     nameLineEdit = new QLineEdit;
 
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QRegExp regExp("[\\S]{1,16}");  // name must be 1-16 non-whitespace characters
     nameLineEdit->setValidator(new QRegExpValidator(regExp, this));
+    #else
+    QRegularExpression regExp("[\\S]{1,16}");  // name must be 1-16 non-whitespace characters
+    nameLineEdit->setValidator(new QRegularExpressionValidator(regExp, this));
+    #endif
 
     connect(nameLineEdit, SIGNAL(textChanged(const QString &)),
             this, SLOT(onLineEditTextChanged()));

@@ -6,6 +6,10 @@
 //
 //  ------------------------------------------------------------------------
 //
+//  Edited for Qt6 compatibility
+//
+//  ------------------------------------------------------------------------
+//
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published
 //  by the Free Software Foundation, either version 3 of the License, or
@@ -406,7 +410,9 @@ void WavePlot::mouseMoveEvent(QMouseEvent *event)
 void WavePlot::drawDragIndicator(int frameIndex, bool erase)
 {
     QPainter painter(&pixmap);
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
+    #endif
     QRect frame = frameList[numFramesIndex[selectedPort]][frameIndex];
     if (erase) {
         painter.setPen(palette().window().color());
@@ -424,11 +430,18 @@ void WavePlot::wheelEvent(QWheelEvent *event)
 {
     int newSelectedFrame;
 
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (event->delta() < 0) {
-        newSelectedFrame = selectedFrame[selectedPort] +
-                frameNumColumns[numFramesIndex[selectedPort]];
+        newSelectedFrame = selectedFrame[selectedPort] + frameNumColumns[numFramesIndex[selectedPort]];
         changeSelectedFrame(newSelectedFrame, false);
-    } else {
+    }
+    #else
+    if (event->angleDelta().y() < 0) {
+        newSelectedFrame = selectedFrame[selectedPort] + frameNumColumns[numFramesIndex[selectedPort]];
+        changeSelectedFrame(newSelectedFrame, false);
+    }
+    #endif
+    else {
         newSelectedFrame = selectedFrame[selectedPort] -
                 frameNumColumns[numFramesIndex[selectedPort]];
         changeSelectedFrame(newSelectedFrame, false);
@@ -584,7 +597,9 @@ void WavePlot::highlightFrame(int frameIndex, bool eraseOldFrame)
 {
     QRect frame;
     QPainter painter(&pixmap);
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
+    #endif
 
     painter.setPen(Qt::darkGray);
 
@@ -630,7 +645,9 @@ void WavePlot::refreshPixmap()
     pixmap.fill();
 
     QPainter painter(&pixmap);
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
+    #endif
 
     // Clear old display.
     painter.eraseRect(rect());
@@ -844,7 +861,9 @@ void WavePlot::drawWaveforms()
     SignalType type;
     double tStepMsec, xScaleFactor, yScaleFactor;
     QPainter painter(&pixmap);
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
+    #endif
 
     int length = Rhd2000DataBlock::getSamplesPerDataBlock() * numUsbBlocksToPlot;
 

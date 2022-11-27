@@ -6,6 +6,10 @@
 //
 //  ------------------------------------------------------------------------
 //
+//  Edited for Qt6 compatibility
+//
+//  ------------------------------------------------------------------------
+//
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published
 //  by the Free Software Foundation, either version 3 of the License, or
@@ -136,7 +140,9 @@ void SpikePlot::setSampleRate(double newSampleRate)
 void SpikePlot::drawAxisLines()
 {
     QPainter painter(&pixmap);
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
+    #endif
 
     painter.eraseRect(frame);
 
@@ -161,8 +167,12 @@ void SpikePlot::drawAxisLines()
 void SpikePlot::drawAxisText()
 {
     QPainter painter(&pixmap);
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
     const int textBoxWidth = painter.fontMetrics().width("+" + QString::number(yScale) + " " + QSTRING_MU_SYMBOL + "V");
+    #else
+    const int textBoxWidth = painter.fontMetrics().horizontalAdvance("+" + QString::number(yScale) + " " + QSTRING_MU_SYMBOL + "V", -1);
+    #endif
     const int textBoxHeight = painter.fontMetrics().height();
 
     // Clear entire Widget display area.
@@ -332,7 +342,9 @@ void SpikePlot::updateSpikePlot(double rms)
     drawAxisLines();
 
     QPainter painter(&pixmap);
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
+    #endif
 
     // Vector for waveform plot points
     QPointF *polyline = new QPointF[totalTSteps];
@@ -414,9 +426,16 @@ void SpikePlot::mousePressEvent(QMouseEvent *event)
 // If user spins mouse wheel, change voltage scale.
 void SpikePlot::wheelEvent(QWheelEvent *event)
 {
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (event->delta() > 0) {
         spikeScopeDialog->contractYScale();
-    } else {
+    }
+    #else
+    if (event->angleDelta().y() > 0) {
+        spikeScopeDialog->contractYScale();
+    }
+    #endif
+    else {
         spikeScopeDialog->expandYScale();
     }
 }
@@ -515,7 +534,6 @@ void SpikePlot::setDigitalEdgePolarity(bool risingEdge)
     }
 }
 
-
 // Change to a new signal channel.
 void SpikePlot::setNewChannel(SignalChannel* newChannel)
 {
@@ -540,7 +558,11 @@ void SpikePlot::resizeEvent(QResizeEvent*) {
 }
 
 void SpikePlot::initializeDisplay() {
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     const int textBoxWidth = fontMetrics().width("+" + QString::number(yScale) + " " + QSTRING_MU_SYMBOL + "V");
+    #else
+    const int textBoxWidth = fontMetrics().horizontalAdvance("+" + QString::number(yScale) + " " + QSTRING_MU_SYMBOL + "V", -1);
+    #endif
     const int textBoxHeight = fontMetrics().height();
     frame = rect();
     frame.adjust(textBoxWidth + 5, textBoxHeight + 10, -8, -textBoxHeight - 10);

@@ -6,6 +6,10 @@
 //
 //  ------------------------------------------------------------------------
 //
+//  Edited for Qt6 compatibility
+//
+//  ------------------------------------------------------------------------
+//
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published
 //  by the Free Software Foundation, either version 3 of the License, or
@@ -22,6 +26,12 @@
 #ifndef RANDOMNUMBER_H
 #define RANDOMNUMBER_H
 
+#include <QtGlobal>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#include <QRandomGenerator>
+#endif
+
 class RandomNumber
 {
 public:
@@ -34,6 +44,9 @@ public:
 private:
     int gaussianN;
     double gaussianScaleFactor;
+    #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    QRandomGenerator prng;
+    #endif
 };
 
 #endif // RANDOMNUMBER_H

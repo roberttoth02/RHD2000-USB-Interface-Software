@@ -6,6 +6,10 @@
 //
 //  ------------------------------------------------------------------------
 //
+//  Edited for Qt6 compatibility
+//
+//  ------------------------------------------------------------------------
+//
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published
 //  by the Free Software Foundation, either version 3 of the License, or
@@ -30,7 +34,11 @@ RandomNumber::RandomNumber()
 {
     // Seed random number generator.
     QTime time = QTime::currentTime();
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     qsrand((uint) time.msec());
+    #else
+    prng.seed((uint) time.msec());
+    #endif
 
     // Initialize parameters for Gaussian distribution approximator.
     setGaussianAccuracy(6);
@@ -39,13 +47,21 @@ RandomNumber::RandomNumber()
 // Returns a random number from a uniform distribution between 0.0 and 1.0.
 double RandomNumber::randomUniform()
 {
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     return ((double)qrand() / (double)RAND_MAX);
+    #else
+    return ((double)prng.generate() / (double)RAND_MAX);
+    #endif
 }
 
 // Returns a random number from a uniform distribution between min and max.
 double RandomNumber::randomUniform(double min, double max)
 {
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     return (((double)qrand() / (double)RAND_MAX) * (max - min) + min);
+    #else
+    return (((double)prng.generate() / (double)RAND_MAX) * (max - min) + min);
+    #endif
 }
 
 // Returns a random number from a Gaussian distribution with variance = 1.0.

@@ -6,6 +6,10 @@
 //
 //  ------------------------------------------------------------------------
 //
+//  Edited for Qt6 compatibility
+//
+//  ------------------------------------------------------------------------
+//
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published
 //  by the Free Software Foundation, either version 3 of the License, or
@@ -28,7 +32,13 @@
 
 #include <QFile>
 #include <QTime>
+#include <QTimer>
+#include <QElapsedTimer>
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <QSound>
+#else
+#include <QSoundEffect>
+#endif
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -60,7 +70,12 @@
 #include "rhd2000evalboard.h"
 #include "rhd2000registers.h"
 #include "rhd2000datablock.h"
-#include "okFrontPanelDLL.h"
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+namespace Qt {
+    static auto endl = ::endl;
+}
+#endif
 
 // Main Window of RHD2000 USB interface application.
 
@@ -956,7 +971,11 @@ void MainWindow::createLayout()
     QWidget *mainWidget = new QWidget;
     mainWidget->setLayout(mainLayout);
 
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QRect screenRect = QApplication::desktop()->screenGeometry();
+    #else
+    QRect screenRect = QGuiApplication::primaryScreen()->geometry();
+    #endif
     setCentralWidget(mainWidget);
     adjustSize();
 
@@ -2034,7 +2053,7 @@ void MainWindow::findConnectedAmplifiers()
 
                 if (id == CHIP_ID_RHD2132 || id == CHIP_ID_RHD2216 ||
                         (id == CHIP_ID_RHD2164 && register59Value == REGISTER_59_MISO_A)) {
-                    // cout << "Delay: " << delay << " on stream " << stream << " is good." << endl;
+                    // cout << "Delay: " << delay << " on stream " << stream << " is good." << Qt::endl;
                     sumGoodDelays[stream] = sumGoodDelays[stream] + 1;
                     if (indexFirstGoodDelay[stream] == -1) {
                         indexFirstGoodDelay[stream] = delay;
@@ -2067,10 +2086,10 @@ void MainWindow::findConnectedAmplifiers()
         evalBoard->setCableDelay(Rhd2000EvalBoard::PortD,
                                  qMax(optimumDelay[6], optimumDelay[7]));
 
-//        cout << "Port A cable delay: " << qMax(optimumDelay[0], optimumDelay[1]) << endl;
-//        cout << "Port B cable delay: " << qMax(optimumDelay[2], optimumDelay[3]) << endl;
-//        cout << "Port C cable delay: " << qMax(optimumDelay[4], optimumDelay[5]) << endl;
-//        cout << "Port D cable delay: " << qMax(optimumDelay[6], optimumDelay[7]) << endl;
+//        cout << "Port A cable delay: " << qMax(optimumDelay[0], optimumDelay[1]) << Qt::endl;
+//        cout << "Port B cable delay: " << qMax(optimumDelay[2], optimumDelay[3]) << Qt::endl;
+//        cout << "Port C cable delay: " << qMax(optimumDelay[4], optimumDelay[5]) << Qt::endl;
+//        cout << "Port D cable delay: " << qMax(optimumDelay[6], optimumDelay[7]) << Qt::endl;
 
 
         cableLengthPortA =
@@ -2526,7 +2545,11 @@ void MainWindow::runInterfaceBoard()
 {
     bool newDataReady;
     int triggerIndex;
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QTime timer;
+    #else
+    QElapsedTimer timer;
+    #endif
     int extraCycles = 0;
     int timestampOffset = 0;
     unsigned int preTriggerBufferQueueLength = 0;
@@ -2543,8 +2566,18 @@ void MainWindow::runInterfaceBoard()
                       (numUsbBlocksToRead * Rhd2000DataBlock::getSamplesPerDataBlock() / boardSampleRate)) + 1);
     }
 
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QSound triggerBeep(QDir::tempPath() + "/triggerbeep.wav");
     QSound triggerEndBeep(QDir::tempPath() + "/triggerendbeep.wav");
+    #else
+    QSoundEffect triggerBeep(this);
+    triggerBeep.setSource(QUrl::fromLocalFile(QDir::tempPath() + "/triggerbeep.wav"));
+    triggerBeep.setLoopCount(0);
+
+    QSoundEffect triggerEndBeep(this);
+    triggerEndBeep.setSource(QUrl::fromLocalFile(QDir::tempPath() + "/triggerendbeep.wav"));
+    triggerEndBeep.setLoopCount(0);
+    #endif
 
     // Average temperature sensor readings over a ~0.1 second interval.
     signalProcessor->tempHistoryReset(numUsbBlocksToRead * 3);
@@ -3039,7 +3072,7 @@ void MainWindow::loadSettings()
     QFile settingsFile(loadSettingsFileName);
     if (!settingsFile.open(QIODevice::ReadOnly)) {
         cerr << "Can't open settings file " <<
-                loadSettingsFileName.toStdString() << endl;
+                loadSettingsFileName.toStdString() << std::endl;
         wavePlot->setFocus();
         return;
     }
@@ -3842,7 +3875,7 @@ void MainWindow::saveImpedances()
 
         if (!csvFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
             cerr << "Cannot open CSV file for writing: " <<
-                    qPrintable(csvFile.errorString()) << endl;
+                    qPrintable(csvFile.errorString()) << std::endl;
         }
         QTextStream out(&csvFile);
 
@@ -3850,7 +3883,7 @@ void MainWindow::saveImpedances()
         out << "Impedance Magnitude at " << actualImpedanceFreq << " Hz (ohms),";
         out << "Impedance Phase at " << actualImpedanceFreq << " Hz (degrees),";
         out << "Series RC equivalent R (Ohms),";
-        out << "Series RC equivalent C (Farads)" << endl;
+        out << "Series RC equivalent C (Farads)" << Qt::endl;
 
         SignalChannel *signalChannel;
         for (int stream = 0; stream < evalBoard->getNumEnabledDataStreams(); ++stream) {
@@ -3880,7 +3913,7 @@ void MainWindow::saveImpedances()
                     out.setRealNumberPrecision(2);
 
                     out << equivalentR << ",";
-                    out << equivalentC << endl;
+                    out << equivalentC << Qt::endl;
                 }
             }
         }
