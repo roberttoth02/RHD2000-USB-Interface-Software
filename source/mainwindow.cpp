@@ -480,8 +480,13 @@ void MainWindow::createLayout()
             this, SLOT(changeSampleRate(int)));
     connect(notchFilterComboBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(changeNotchFilter(int)));
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(displayButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(changePort(int)));
+    #else
+    connect(displayButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(changePort(int)));
+    #endif
 
     dacGainSlider = new QSlider(Qt::Horizontal);
     dacNoiseSuppressSlider = new QSlider(Qt::Horizontal);
@@ -660,8 +665,13 @@ void MainWindow::createLayout()
             this, SLOT(dacEnable(bool)));
     connect(dacSetButton, SIGNAL(clicked()),
             this, SLOT(dacSetChannel()));
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(dacButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(dacSelected(int)));
+    #else
+    connect(dacButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(dacSelected(int)));
+    #endif
 
     QHBoxLayout *dacControlLayout = new QHBoxLayout;
     dacControlLayout->addWidget(dacEnableCheckBox);
