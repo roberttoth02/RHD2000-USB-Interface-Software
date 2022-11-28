@@ -6,7 +6,7 @@
 //
 //  ------------------------------------------------------------------------
 //
-//  Edited for Qt6 compatibility
+//  Edited for Qt6 compatibility, added timer
 //
 //  ------------------------------------------------------------------------
 //
@@ -520,11 +520,20 @@ void MainWindow::createLayout()
     runStopLayout->addWidget(fifoLagLabel);
     runStopLayout->addWidget(fifoFullLabel);
 
+    timeLabel = new QLabel(tr("00:00:00"));
+    timeLabel->setStyleSheet("color: black");
+    timeLabel->setFixedWidth(timeLabel->sizeHint().width());
+
+    displayTimer = new QTimer(this);
+    displayTimer->setInterval(1000);
+    connect(displayTimer, SIGNAL(timeout()), this, SLOT(updateTimeLabel()));
+
     QHBoxLayout *recordLayout = new QHBoxLayout;
     recordLayout->addWidget(recordButton);
     recordLayout->addWidget(triggerButton);
     recordLayout->addWidget(setSaveFormatButton);
     recordLayout->addStretch(1);
+    recordLayout->addWidget(timeLabel);
 
     saveFilenameLineEdit = new QLineEdit();
     saveFilenameLineEdit->setEnabled(false);
@@ -2553,6 +2562,10 @@ void MainWindow::writeSaveFileHeader(QDataStream &outStream, QDataStream &infoSt
 // waveform data over USB port.
 void MainWindow::runInterfaceBoard()
 {
+    timeLabel->setText(tr("00:00:00"));
+    timeLabel->setStyleSheet("color: green");
+    displayTimer->start();
+
     bool newDataReady;
     int triggerIndex;
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -2936,6 +2949,9 @@ void MainWindow::runInterfaceBoard()
 // Stop SPI data acquisition.
 void MainWindow::stopInterfaceBoard()
 {
+    displayTimer->stop();
+    timeLabel->setStyleSheet("color: black");
+
     running = false;
     wavePlot->setFocus();
 }
@@ -4221,6 +4237,12 @@ void MainWindow::setDacThreshold8(int threshold)
 {
     int threshLevel = qRound((double) threshold / 0.195) + 32768;
     if (!synthMode) evalBoard->setDacThreshold(7, threshLevel, threshold >= 0);
+}
+
+void MainWindow::updateTimeLabel()
+{
+    QTime time = QTime::fromString(timeLabel->text(), "hh:mm:ss");
+    timeLabel->setText(time.addSecs(1).toString("hh:mm:ss"));
 }
 
 int MainWindow::getEvalBoardMode()

@@ -6,7 +6,7 @@
 //
 //  ------------------------------------------------------------------------
 //
-//  Edited for Qt6 compatibility
+//  Edited for Qt6 compatibility, added timer
 //
 //  ------------------------------------------------------------------------
 //
@@ -145,6 +145,7 @@ private slots:
     void setDacThreshold6(int threshold);
     void setDacThreshold7(int threshold);
     void setDacThreshold8(int threshold);
+    void updateTimeLabel();
 
 private:
     void createActions();
@@ -371,6 +372,9 @@ private:
     QLabel *actualImpedanceFreqLabel;
     QLabel *dacGainLabel;
     QLabel *dacNoiseSuppressLabel;
+    QLabel *timeLabel;
+
+    QTimer *displayTimer;
 };
 
 #endif // MAINWINDOW_H
