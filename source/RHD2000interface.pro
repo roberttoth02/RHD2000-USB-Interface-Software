@@ -2,7 +2,7 @@ TEMPLATE = app
 
 QT += widgets multimedia
 
-CONFIG += static c++11 app_bundle
+CONFIG += c++11 app_bundle
 
 HEADERS = \
     okFrontPanelDLL.h \
@@ -66,21 +66,48 @@ SOURCES = main.cpp \
 RESOURCES = RHD2000interface.qrc
 
 macx: {
-    QMAKE_LFLAGS = -Wl,-install_name,@rpath/Content/Frameworks/
+    # Qt 4 only supported on pre-Monterey Intel Macs
+    equals(QT_MAJOR_VERSION, 4): {
+        LIBS += "-L$$PWD/../Opal Kelly library files/Mac OS X Intel/" -lokFrontPanel
 
-    contains(QMAKE_HOST.arch, arm64): {
-        LibFile.files = "$$PWD/../Opal Kelly library files/Mac OS X ARM/libokFrontPanel.dylib"
-        LibFile.path = $$OUT_PWD/$$join(TARGET,,,.app)/Contents/Frameworks
-        COPIES += LibFile
+        LibFile.files = "$$PWD/../Opal Kelly library files/Mac OS X Intel/"
+        LibFile.path = Contents/Frameworks
+        QMAKE_BUNDLE_DATA += LibFile
+
+        BitFile.file = "$$PWD/../main.bit"
+        BitFile.path = Contents/MacOS
+        QMAKE_BUNDLE_DATA += BitFile
     } else {
-        LibFile.files = "$$PWD/../Opal Kelly library files/Mac OS X Intel/libokFrontPanel.dylib"
-        LibFile.path = $$OUT_PWD/$$join(TARGET,,,.app)/Contents/Frameworks
-        COPIES += LibFile
-    }
+        # On Qt 5 and above...
+        # Tests OS X version, 19.6.0 (Darwin) for 10.15 Catalina, last pre-ARM version
+        versionAtMost(QMAKE_HOST.version, 19.6.0): {
+            LIBS += "-L$$PWD/../Opal Kelly library files/Mac OS X Intel/" -lokFrontPanel
 
-    BitFile.files = "$$PWD/../main.bit"
-    BitFile.path = $$OUT_PWD/$$join(TARGET,,,.app)/Contents/MacOS
-    COPIES += BitFile
+            LibFile.files = "$$PWD/../Opal Kelly library files/Mac OS X Intel/"
+            LibFile.path = Contents/Frameworks
+            QMAKE_BUNDLE_DATA += LibFile
+
+            BitFile.file = "$$PWD/../main.bit"
+            BitFile.path = Contents/MacOS
+            QMAKE_BUNDLE_DATA += BitFile
+        } else {
+            # On post-Catalina macOS, must test CPU architecture
+            QMAKE_LFLAGS = -Wl,-install_name,@rpath/Content/Frameworks/
+            contains(QMAKE_HOST.arch, arm64): {
+                LibFile.files = "$$PWD/../Opal Kelly library files/Mac OS X ARM/libokFrontPanel.dylib"
+                LibFile.path = $$OUT_PWD/$$join(TARGET,,,.app)/Contents/Frameworks
+                COPIES += LibFile
+            } else {
+                LibFile.files = "$$PWD/../Opal Kelly library files/Mac OS X Intel/libokFrontPanel.dylib"
+                LibFile.path = $$OUT_PWD/$$join(TARGET,,,.app)/Contents/Frameworks
+                COPIES += LibFile
+            }
+
+            BitFile.files = "$$PWD/../main.bit"
+            BitFile.path = $$OUT_PWD/$$join(TARGET,,,.app)/Contents/MacOS
+            COPIES += BitFile
+        }
+    }
 }
 
 unix:!macx {

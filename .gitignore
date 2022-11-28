@@ -2,3 +2,5 @@
 **/.DS_Store
 /build*
 source/RHD2000interface.pro.user
+
+*.autosave
