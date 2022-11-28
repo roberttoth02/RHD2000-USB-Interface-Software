@@ -6,7 +6,7 @@
 //
 //  ------------------------------------------------------------------------
 //
-//  Edited for Qt6 compatibility
+//  Edited for Qt6 compatibility, high DPI support, dark mode support
 //
 //  ------------------------------------------------------------------------
 //
@@ -62,6 +62,20 @@ SpikePlot::SpikePlot(SignalProcessor *inSignalProcessor, SignalChannel *initialC
     digitalTriggerChannel = 0;
     digitalEdgePolarity = true;
 
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    backgroundColor = parent->palette().color(QWidget::backgroundRole());
+    textColor = parent->palette().text().color();
+    if (textColor.name() == QColor(Qt::white).name()) {
+        isDarkMode = true;
+    } else {
+        isDarkMode = false;
+    }
+    #else
+        isDarkMode = false;
+        backgroundColor = QColor(Qt::white);
+        textColor = QColor(Qt::black);
+    #endif
+
     setBackgroundRole(QPalette::Window);
     setAutoFillBackground(true);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -94,17 +108,31 @@ SpikePlot::SpikePlot(SignalProcessor *inSignalProcessor, SignalChannel *initialC
     scopeColors[1].resize(20);
     scopeColors[2].resize(30);
 
-    for (i = 6; i < 10; ++i) scopeColors[0][i] = Qt::blue;
-    for (i = 3; i < 6; ++i) scopeColors[0][i] = Qt::darkGray;
-    for (i = 0; i < 3; ++i) scopeColors[0][i] = Qt::lightGray;
+    if (!isDarkMode) {
+        for (i = 6; i < 10; ++i) scopeColors[0][i] = Qt::blue;
+        for (i = 3; i < 6; ++i) scopeColors[0][i] = Qt::darkGray;
+        for (i = 0; i < 3; ++i) scopeColors[0][i] = Qt::lightGray;
 
-    for (i = 12; i < 20; ++i) scopeColors[1][i] = Qt::blue;
-    for (i = 6; i < 12; ++i) scopeColors[1][i] = Qt::darkGray;
-    for (i = 0; i < 6; ++i) scopeColors[1][i] = Qt::lightGray;
+        for (i = 12; i < 20; ++i) scopeColors[1][i] = Qt::blue;
+        for (i = 6; i < 12; ++i) scopeColors[1][i] = Qt::darkGray;
+        for (i = 0; i < 6; ++i) scopeColors[1][i] = Qt::lightGray;
 
-    for (i = 18; i < 30; ++i) scopeColors[2][i] = Qt::blue;
-    for (i = 9; i < 18; ++i) scopeColors[2][i] = Qt::darkGray;
-    for (i = 0; i < 9; ++i) scopeColors[2][i] = Qt::lightGray;
+        for (i = 18; i < 30; ++i) scopeColors[2][i] = Qt::blue;
+        for (i = 9; i < 18; ++i) scopeColors[2][i] = Qt::darkGray;
+        for (i = 0; i < 9; ++i) scopeColors[2][i] = Qt::lightGray;
+    } else {
+        for (i = 6; i < 10; ++i) scopeColors[0][i] = Qt::yellow; // Qt::cyan;
+        for (i = 3; i < 6; ++i) scopeColors[0][i] = Qt::lightGray;
+        for (i = 0; i < 3; ++i) scopeColors[0][i] = Qt::darkGray;
+
+        for (i = 12; i < 20; ++i) scopeColors[1][i] = Qt::yellow; // Qt::cyan;
+        for (i = 6; i < 12; ++i) scopeColors[1][i] = Qt::lightGray;
+        for (i = 0; i < 6; ++i) scopeColors[1][i] = Qt::darkGray;
+
+        for (i = 18; i < 30; ++i) scopeColors[2][i] = Qt::yellow; // Qt::cyan;
+        for (i = 9; i < 18; ++i) scopeColors[2][i] = Qt::lightGray;
+        for (i = 0; i < 9; ++i) scopeColors[2][i] = Qt::darkGray;
+    }
 
     // Default values that may be overwritten.
     yScale = 5000;
@@ -145,7 +173,7 @@ void SpikePlot::drawAxisLines()
     #endif
     painter.setRenderHint(QPainter::Antialiasing);
 
-    painter.eraseRect(frame);
+    painter.fillRect(frame, QBrush(backgroundColor, Qt::SolidPattern));
 
     painter.setPen(Qt::darkGray);
 
@@ -178,12 +206,14 @@ void SpikePlot::drawAxisText()
     painter.setRenderHint(QPainter::Antialiasing);
 
     // Clear entire Widget display area.
-    painter.eraseRect(rect());
+    painter.fillRect(rect(), QBrush(backgroundColor, Qt::SolidPattern));
 
     // Draw border around Widget display area.
     painter.setPen(Qt::darkGray);
     QRect rect(0, 0, width() - 1, height() - 1);
     painter.drawRect(rect);
+
+    painter.setPen(textColor);
 
     // If the selected channel is an amplifier channel, then write the channel name and number,
     // otherwise remind the user than non-amplifier channels cannot be displayed in Spike Scope.
@@ -399,7 +429,11 @@ void SpikePlot::updateSpikePlot(double rms)
     // Write RMS value to display.
     const int textBoxWidth = 180;
     const int textBoxHeight = painter.fontMetrics().height();
-    painter.setPen(Qt::darkGreen);
+    if (!isDarkMode) {
+        painter.setPen(Qt::darkGreen);
+    } else {
+        painter.setPen(Qt::green);
+    }
     painter.drawText(frame.left() + 6, frame.top() + 5,
                       textBoxWidth, textBoxHeight,
                       Qt::AlignLeft | Qt::AlignTop,
@@ -562,7 +596,7 @@ void SpikePlot::resizeEvent(QResizeEvent*) {
     #else
     pixmap = QPixmap(size());
     #endif
-    pixmap.fill();
+    pixmap.fill(backgroundColor);
     initializeDisplay();
 }
 

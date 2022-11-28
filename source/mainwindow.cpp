@@ -6,7 +6,7 @@
 //
 //  ------------------------------------------------------------------------
 //
-//  Edited for Qt6 compatibility, added timer
+//  Edited for Qt6 compatibility, added recording timer, dark mode support
 //
 //  ------------------------------------------------------------------------
 //
@@ -314,6 +314,17 @@ void MainWindow::scanPorts()
 // UI.
 void MainWindow::createLayout()
 {
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    // Check for dark theme on creation
+    if (this->palette().text().color().name() == QColor(Qt::white).name()) {
+        isDarkMode = true;
+    } else {
+        isDarkMode = false;
+    }
+    #else
+    isDarkMode = false;
+    #endif
+
     int i;
 
     setWindowIcon(QIcon(":/images/Intan_Icon_32p_trans24.png"));
@@ -510,7 +521,11 @@ void MainWindow::createLayout()
     fifoLagLabel->setStyleSheet("color: green");
 
     fifoFullLabel = new QLabel(tr("(0% full)"));
-    fifoFullLabel->setStyleSheet("color: black");
+    if (!isDarkMode) {
+        fifoFullLabel->setStyleSheet("color: black");
+    } else {
+        fifoFullLabel->setStyleSheet("color: white");
+    }
 
     QHBoxLayout *runStopLayout = new QHBoxLayout;
     runStopLayout->addWidget(runButton);
@@ -521,7 +536,11 @@ void MainWindow::createLayout()
     runStopLayout->addWidget(fifoFullLabel);
 
     timeLabel = new QLabel(tr("00:00:00"));
-    timeLabel->setStyleSheet("color: black");
+    if (!isDarkMode) {
+        timeLabel->setStyleSheet("color: black");
+    } else {
+        timeLabel->setStyleSheet("color: white");
+    }
     timeLabel->setFixedWidth(timeLabel->sizeHint().width());
 
     displayTimer = new QTimer(this);
@@ -2720,7 +2739,11 @@ void MainWindow::runInterfaceBoard()
                 if (fifoPercentageFull > 75.0) {
                     fifoFullLabel->setStyleSheet("color: red");
                 } else {
-                    fifoFullLabel->setStyleSheet("color: black");
+                    if (!isDarkMode) {
+                        fifoFullLabel->setStyleSheet("color: black");
+                    } else {
+                        fifoFullLabel->setStyleSheet("color: white");
+                    }
                 }
                 // Read waveform data from USB interface board.
                 totalBytesWritten +=
@@ -2950,7 +2973,11 @@ void MainWindow::runInterfaceBoard()
 void MainWindow::stopInterfaceBoard()
 {
     displayTimer->stop();
-    timeLabel->setStyleSheet("color: black");
+    if (!isDarkMode) {
+        timeLabel->setStyleSheet("color: black");
+    } else {
+        timeLabel->setStyleSheet("color: white");
+    }
 
     running = false;
     wavePlot->setFocus();

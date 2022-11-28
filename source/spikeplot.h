@@ -6,6 +6,10 @@
 //
 //  ------------------------------------------------------------------------
 //
+//  Edited for Qt6 compatibility, high DPI support, dark mode support
+//
+//  ------------------------------------------------------------------------
+//
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published
 //  by the Free Software Foundation, either version 3 of the License, or
@@ -102,6 +106,9 @@ private:
 
     QVector<QVector<QColor> > scopeColors;
     
+    bool isDarkMode;
+    QColor backgroundColor;
+    QColor textColor;
 };
 
 #endif // SPIKEPLOT_H

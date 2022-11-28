@@ -18,7 +18,10 @@ software in demonstration mode without installing drivers or plugging in an inte
 The C++ source code uses a handful of C++11 features, so g++ users may need to add -std=c++11 to their 
 command line or make file.
 
-This code was tested with 5.15 Long Term Support, though should be backwards compatible to Qt 4.8.1.
+This code was tested with Qt 5.15 and Qt 6.3.1, though should be backwards compatible to Qt 4.8.1.
+High DPI display plot support is available using Qt 5.11 and above.
+From Qt 6 onwards, plot windows support a dark theme to match the main application window (subject to 
+the main window correctly detecting the system theme in the first place).
 
 For production code, you should compile a Release build (Visual Studio) or use the optimization flag
 -O3 (g++).  Otherwise, the compiled code may not be fast enough to keep up with how fast data streams

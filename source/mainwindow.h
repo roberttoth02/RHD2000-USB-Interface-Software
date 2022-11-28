@@ -6,7 +6,7 @@
 //
 //  ------------------------------------------------------------------------
 //
-//  Edited for Qt6 compatibility, added timer
+//  Edited for Qt6 compatibility, added recording timer, dark mode support
 //
 //  ------------------------------------------------------------------------
 //
@@ -186,6 +186,8 @@ private:
 
     int ttlOut[16];
     int evalBoardMode;
+
+    bool isDarkMode;
 
     bool running;
     bool recording;

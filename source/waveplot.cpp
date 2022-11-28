@@ -6,7 +6,7 @@
 //
 //  ------------------------------------------------------------------------
 //
-//  Edited for Qt6 compatibility
+//  Edited for Qt6 compatibility, high DPI support, dark mode support
 //
 //  ------------------------------------------------------------------------
 //
@@ -64,6 +64,20 @@ WavePlot::WavePlot(SignalProcessor *inSignalProcessor, SignalSources *inSignalSo
 
     impedanceLabels = false;
     pointPlotMode = false;
+
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    backgroundColor = parent->palette().color(QWidget::backgroundRole());
+    textColor = parent->palette().text().color();
+    if (textColor.name() == QColor(Qt::white).name()) {
+        isDarkMode = true;
+    } else {
+        isDarkMode = false;
+    }
+    #else
+        isDarkMode = false;
+        backgroundColor = QColor(Qt::white);
+        textColor = QColor(Qt::black);
+    #endif
 }
 
 // Initialize WavePlot object.
@@ -649,7 +663,7 @@ void WavePlot::refreshPixmap()
     #else
     pixmap = QPixmap(size());
     #endif
-    pixmap.fill();
+    pixmap.fill(backgroundColor);
 
     QPainter painter(&pixmap);
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -658,7 +672,7 @@ void WavePlot::refreshPixmap()
     painter.setRenderHint(QPainter::Antialiasing);
 
     // Clear old display.
-    painter.eraseRect(rect());
+    painter.fillRect(rect(), QBrush(backgroundColor, Qt::SolidPattern));
 
     // Draw box around entire display.
     painter.setPen(Qt::darkGray);
@@ -722,7 +736,11 @@ SignalChannel* WavePlot::selectedChannel(int index)
 void WavePlot::drawAxisLines(QPainter &painter, int frameNumber)
 {
     QRect frame = frameList[numFramesIndex[selectedPort]][frameNumber];
-    painter.setPen(Qt::darkGray);
+    if (!isDarkMode) {
+        painter.setPen(Qt::darkGray);
+    } else {
+        painter.setPen(Qt::darkGray);
+    }
 
     SignalType type = selectedChannel(frameNumber + topLeftFrame[selectedPort])->signalType;
     if (selectedChannel(frameNumber + topLeftFrame[selectedPort])->enabled) {
@@ -768,7 +786,11 @@ void WavePlot::drawAxisText(QPainter &painter, int frameNumber)
     double electrodeImpedancePhase =
             selectedChannel(frameNumber + topLeftFrame[selectedPort])->electrodeImpedancePhase;
 
-    painter.setPen(Qt::darkGray);
+    if (!isDarkMode) {
+        painter.setPen(Qt::darkGray);
+    } else {
+        painter.setPen(textColor);
+    }
 
     // Draw vertical axis scale label.
     if (type == AmplifierSignal) {
@@ -900,7 +922,7 @@ void WavePlot::drawWaveforms()
             eraseBlock = adjustedFrame;
             eraseBlock.setLeft(xOffset);
             eraseBlock.setRight((tAxisLength * (1000.0 / sampleRate) / tScale) * (length - 1) + xOffset);
-            painter.eraseRect(eraseBlock);
+            painter.fillRect(eraseBlock, QBrush(backgroundColor, Qt::SolidPattern));
 
             // Redraw y = 0 axis
             drawAxisLines(painter, j);
@@ -934,7 +956,11 @@ void WavePlot::drawWaveforms()
                         signalProcessor->amplifierPostFilter.at(stream).at(channel).at(length - 1);
 
                 // draw waveform
-                painter.setPen(Qt::blue);
+                if (!isDarkMode) {
+                    painter.setPen(Qt::blue);
+                } else {
+                    painter.setPen(Qt::yellow);
+                }
                 if (pointPlotMode) {
                     painter.drawPoints(polyline, length + 1);
                 } else {
@@ -1018,9 +1044,15 @@ void WavePlot::drawWaveforms()
                         signalProcessor->supplyVoltage.at(stream).at((length / 60) - 1);
 
                 // draw waveform
-                painter.setPen(Qt::green);
-                if (voltageLow) painter.setPen(Qt::yellow);
-                if (voltageOutOfRange) painter.setPen(Qt::red);
+                if (!isDarkMode) {
+                    painter.setPen(Qt::darkGreen);
+                    if (voltageLow) painter.setPen(Qt::yellow);
+                    if (voltageOutOfRange) painter.setPen(Qt::red);
+                } else {
+                    painter.setPen(Qt::green);
+                    if (voltageLow) painter.setPen(QColor(255, 153, 0));
+                    if (voltageOutOfRange) painter.setPen(Qt::red);
+                }
                 if (pointPlotMode) {
                     painter.drawPoints(polyline, (length / 60) + 1);
                 } else {
@@ -1056,7 +1088,11 @@ void WavePlot::drawWaveforms()
                         signalProcessor->boardAdc.at(channel).at(length - 1);
 
                 // draw waveform
-                painter.setPen(Qt::darkGreen);
+                if (!isDarkMode) {
+                    painter.setPen(Qt::darkGreen);
+                } else {
+                    painter.setPen(Qt::darkGreen);
+                }
                 if (pointPlotMode) {
                     painter.drawPoints(polyline, length + 1);
                 } else {
@@ -1094,7 +1130,11 @@ void WavePlot::drawWaveforms()
 
                 // draw waveform
                 QPen pen;
-                pen.setColor(QColor(200, 50, 200));
+                if (!isDarkMode) {
+                    pen.setColor(QColor(200, 50, 200));
+                } else {
+                    pen.setColor(QColor(200, 50, 200));
+                }
                 painter.setPen(pen);
                 if (pointPlotMode) {
                     painter.drawPoints(polyline, length + 1);
