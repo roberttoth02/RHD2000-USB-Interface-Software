@@ -413,14 +413,15 @@ void WavePlot::drawDragIndicator(int frameIndex, bool erase)
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
     #endif
+    painter.setRenderHint(QPainter::Antialiasing);
     QRect frame = frameList[numFramesIndex[selectedPort]][frameIndex];
     if (erase) {
         painter.setPen(palette().window().color());
     } else {
         painter.setPen(Qt::darkRed);
     }
-    painter.drawLine(frame.center().x() - (frame.width() / 2 + 3) + 1, frame.top() - 5,
-                      frame.center().x() - (frame.width() / 2 + 3) + 1, frame.bottom() + 7);
+    painter.drawLine(QLineF(frame.center().x() - (frame.width() / 2 + 3) + 1, frame.top() - 5,
+                      frame.center().x() - (frame.width() / 2 + 3) + 1, frame.bottom() + 7));
     update();
 }
 
@@ -600,7 +601,7 @@ void WavePlot::highlightFrame(int frameIndex, bool eraseOldFrame)
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
     #endif
-
+    painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(Qt::darkGray);
 
     if (eraseOldFrame) {
@@ -639,15 +640,22 @@ void WavePlot::highlightFrame(int frameIndex, bool eraseOldFrame)
 
 // Refresh pixel map used in double buffered graphics.
 void WavePlot::refreshPixmap()
-{
+{   
     // Pixel map used for double buffering.
+    #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+    qreal dpr = devicePixelRatioF(); // High DPI scaling
+    pixmap = QPixmap(width() * dpr, height() * dpr);
+    pixmap.setDevicePixelRatio(dpr);
+    #else
     pixmap = QPixmap(size());
+    #endif
     pixmap.fill();
 
     QPainter painter(&pixmap);
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
     #endif
+    painter.setRenderHint(QPainter::Antialiasing);
 
     // Clear old display.
     painter.eraseRect(rect());
@@ -734,8 +742,8 @@ void WavePlot::drawAxisLines(QPainter &painter, int frameNumber)
         }
     } else {
         // Draw X showing channel is disabled.
-        painter.drawLine(frame.left(), frame.top(), frame.right(), frame.bottom());
-        painter.drawLine(frame.left(), frame.bottom(), frame.right(), frame.top());
+        painter.drawLine(QLineF(frame.left(), frame.top(), frame.right(), frame.bottom()));
+        painter.drawLine(QLineF(frame.left(), frame.bottom(), frame.right(), frame.top()));
     }
 }
 
@@ -864,6 +872,7 @@ void WavePlot::drawWaveforms()
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
     #endif
+    painter.setRenderHint(QPainter::Antialiasing);
 
     int length = Rhd2000DataBlock::getSamplesPerDataBlock() * numUsbBlocksToPlot;
 

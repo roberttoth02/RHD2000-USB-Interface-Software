@@ -143,6 +143,7 @@ void SpikePlot::drawAxisLines()
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
     #endif
+    painter.setRenderHint(QPainter::Antialiasing);
 
     painter.eraseRect(frame);
 
@@ -174,6 +175,7 @@ void SpikePlot::drawAxisText()
     const int textBoxWidth = painter.fontMetrics().horizontalAdvance("+" + QString::number(yScale) + " " + QSTRING_MU_SYMBOL + "V", -1);
     #endif
     const int textBoxHeight = painter.fontMetrics().height();
+    painter.setRenderHint(QPainter::Antialiasing);
 
     // Clear entire Widget display area.
     painter.eraseRect(rect());
@@ -345,6 +347,7 @@ void SpikePlot::updateSpikePlot(double rms)
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     painter.initFrom(this);
     #endif
+    painter.setRenderHint(QPainter::Antialiasing);
 
     // Vector for waveform plot points
     QPointF *polyline = new QPointF[totalTSteps];
@@ -552,7 +555,13 @@ void SpikePlot::setNewChannel(SignalChannel* newChannel)
 
 void SpikePlot::resizeEvent(QResizeEvent*) {
     // Pixel map used for double buffering.
+    #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+    qreal dpr = devicePixelRatioF(); // High DPI scaling
+    pixmap = QPixmap(width() * dpr, height() * dpr);
+    pixmap.setDevicePixelRatio(dpr);
+    #else
     pixmap = QPixmap(size());
+    #endif
     pixmap.fill();
     initializeDisplay();
 }
