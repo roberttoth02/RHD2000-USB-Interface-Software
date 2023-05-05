@@ -30,9 +30,15 @@
 int main(int argc, char *argv[]){
     QApplication app(argc, argv);
 
-#ifdef __APPLE__
+    #if defined(__APPLE__)
     app.setStyle(QStyleFactory::create("Fusion"));
-#endif
+    #elif QT_VERSION >= QT_VERSION_CHECK(6,5,0)
+    #if defined(Q_OS_WIN)
+    if (QSysInfo::productVersion().toInt() > 10) {
+        app.setStyle(QStyleFactory::create("Fusion"));
+    }
+    #endif
+    #endif
 
     MainWindow mainWin;
     mainWin.show();
