@@ -66,6 +66,8 @@ SOURCES = main.cpp \
 RESOURCES = RHD2000interface.qrc
 
 macx: {
+    ICON += "$$PWD/images/intan_icon.icns"
+
     # Qt 4 only supported on pre-Monterey Intel Macs
     equals(QT_MAJOR_VERSION, 4): {
         LIBS += "-L$$PWD/../Opal Kelly library files/Mac OS X Intel/" -lokFrontPanel
@@ -129,6 +131,8 @@ unix:!macx {
 }
 
 win32: {
+    RC_FILE += "$$PWD/images/intan_icon.rc"
+
     CONFIG(debug, debug|release){
         CopyFiles.path = $$OUT_PWD/debug
     } else {
@@ -142,3 +146,8 @@ win32: {
     CopyFiles.files += "$$PWD/../main.bit"
     COPIES += CopyFiles
 }
+
+# Suppress logging output for release build
+CONFIG(release, debug|release): DEFINES += QT_NO_DEBUG_OUTPUT
+CONFIG(release, debug|release): DEFINES += QT_NO_INFO_OUTPUT
+CONFIG(release, debug|release): DEFINES += QT_NO_WARNING_OUTPUT
